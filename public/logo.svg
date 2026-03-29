@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80" fill="none">
+  <!-- V mark with watch crown detail -->
+  <g fill="currentColor">
+    <!-- Left arm of V -->
+    <polygon points="60,8 72,8 100,52 88,52" />
+    <!-- Right arm of V -->
+    <polygon points="140,8 128,8 100,52 112,52" />
+    <!-- Crown/watch detail at top center -->
+    <circle cx="100" cy="6" r="4" />
+    <rect x="96" y="10" width="8" height="12" rx="2"/>
+    <!-- VELIOR text -->
+    <text x="100" y="75" font-family="Georgia, serif" font-size="22" font-weight="bold" text-anchor="middle" letter-spacing="6">VELIOR</text>
+  </g>
+</svg>
