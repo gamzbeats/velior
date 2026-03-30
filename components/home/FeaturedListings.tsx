@@ -4,6 +4,7 @@ import ListingGrid from '@/components/listings/ListingGrid'
 
 export default async function FeaturedListings() {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
   const { data: listings } = await supabase
     .from('listings')
@@ -13,6 +14,15 @@ export default async function FeaturedListings() {
     .limit(6)
 
   if (!listings || listings.length === 0) return null
+
+  let favoritedIds = new Set<string>()
+  if (user) {
+    const { data: favs } = await supabase
+      .from('favorites')
+      .select('listing_id')
+      .eq('user_id', user.id)
+    if (favs) favoritedIds = new Set(favs.map((f) => f.listing_id))
+  }
 
   return (
     <section className="py-28 md:py-40 bg-background">
@@ -28,7 +38,7 @@ export default async function FeaturedListings() {
             View All
           </Link>
         </div>
-        <ListingGrid listings={listings} />
+        <ListingGrid listings={listings} favoritedIds={favoritedIds} isLoggedIn={!!user} />
       </div>
     </section>
   )

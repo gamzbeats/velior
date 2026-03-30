@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { type Listing } from '@/lib/types'
+import FavoriteButton from './FavoriteButton'
 
 const CONDITION_LABELS: Record<string, string> = {
   mint: 'Mint',
@@ -11,9 +12,11 @@ const CONDITION_LABELS: Record<string, string> = {
 
 interface ListingCardProps {
   listing: Listing
+  favoritedIds?: Set<string>
+  isLoggedIn?: boolean
 }
 
-export default function ListingCard({ listing }: ListingCardProps) {
+export default function ListingCard({ listing, favoritedIds, isLoggedIn = false }: ListingCardProps) {
   const primaryImage = listing.images?.[0]
   const formattedPrice = new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -30,7 +33,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
             src={primaryImage}
             alt={listing.title}
             fill
-            className="object-cover transition-transform duration-700 group-hover:scale-105"
+            className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         ) : (
@@ -47,6 +50,22 @@ export default function ListingCard({ listing }: ListingCardProps) {
             {CONDITION_LABELS[listing.condition] ?? listing.condition}
           </span>
         </div>
+
+        {/* Sold overlay */}
+        {listing.status === 'sold' && (
+          <div className="absolute inset-0 bg-background/70 flex items-center justify-center">
+            <span className="text-xs font-medium tracking-[0.3em] uppercase border border-foreground px-4 py-2 bg-background">
+              Sold
+            </span>
+          </div>
+        )}
+
+        {/* Favorite button */}
+        <FavoriteButton
+          listingId={listing.id}
+          initialFavorited={favoritedIds?.has(listing.id) ?? false}
+          isLoggedIn={isLoggedIn}
+        />
       </div>
 
       {/* Info */}

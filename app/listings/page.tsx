@@ -43,6 +43,16 @@ export default async function ListingsPage({
 
   const { data: listings } = await query
 
+  // Fetch favorited listing IDs for the current user
+  let favoritedIds = new Set<string>()
+  if (user) {
+    const { data: favs } = await supabase
+      .from('favorites')
+      .select('listing_id')
+      .eq('user_id', user.id)
+    if (favs) favoritedIds = new Set(favs.map((f) => f.listing_id))
+  }
+
   return (
     <>
       <Navbar user={user} />
@@ -154,7 +164,7 @@ export default async function ListingsPage({
                   {listings?.length ?? 0} {listings?.length === 1 ? 'result' : 'results'}
                 </p>
               </div>
-              <ListingGrid listings={listings ?? []} />
+              <ListingGrid listings={listings ?? []} favoritedIds={favoritedIds} isLoggedIn={!!user} />
             </div>
           </div>
         </div>

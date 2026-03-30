@@ -4,9 +4,11 @@ import ListingCard from './ListingCard'
 interface ListingGridProps {
   listings: Listing[]
   title?: string
+  favoritedIds?: Set<string>
+  isLoggedIn?: boolean
 }
 
-export default function ListingGrid({ listings, title }: ListingGridProps) {
+export default function ListingGrid({ listings, title, favoritedIds, isLoggedIn = false }: ListingGridProps) {
   if (listings.length === 0) {
     return (
       <div className="py-24 text-center">
@@ -24,7 +26,12 @@ export default function ListingGrid({ listings, title }: ListingGridProps) {
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
         {listings.map((listing) => (
-          <ListingCard key={listing.id} listing={listing} />
+          <ListingCard
+            key={listing.id}
+            listing={listing}
+            favoritedIds={favoritedIds}
+            isLoggedIn={isLoggedIn}
+          />
         ))}
       </div>
     </div>

@@ -93,3 +93,8 @@
 .tracking-widest-custom {
   letter-spacing: 0.25em;
 }
+
+/* Spline background — neutralise tous les events sur le canvas et ses overlays */
+.spline-bg, .spline-bg * {
+  pointer-events: none !important;
+}

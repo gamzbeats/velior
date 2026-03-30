@@ -82,7 +82,7 @@ export default function LoginPage() {
               <p className="text-sm text-muted-foreground">{magicSuccess}</p>
             </div>
           ) : mode === 'password' ? (
-            <form action={handlePasswordLogin} className="space-y-5">
+            <form onSubmit={(e) => { e.preventDefault(); handlePasswordLogin(new FormData(e.currentTarget)) }} className="space-y-5">
               <div>
                 <label className="text-[10px] font-medium tracking-[0.25em] uppercase text-muted-foreground block mb-2">Email</label>
                 <input type="email" name="email" required placeholder="you@example.com"
@@ -100,7 +100,7 @@ export default function LoginPage() {
               </button>
             </form>
           ) : (
-            <form action={handleMagicLink} className="space-y-5">
+            <form onSubmit={(e) => { e.preventDefault(); handleMagicLink(new FormData(e.currentTarget)) }} className="space-y-5">
               <div>
                 <label className="text-[10px] font-medium tracking-[0.25em] uppercase text-muted-foreground block mb-2">Email</label>
                 <input type="email" name="email" required placeholder="you@example.com"

@@ -1,10 +1,12 @@
 import { notFound } from 'next/navigation'
-import Image from 'next/image'
 import Link from 'next/link'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
-import ContactForm from '@/components/listings/ContactForm'
+import ImageGallery from '@/components/listings/ImageGallery'
+import InquiryTabsClient from '@/components/listings/InquiryTabs'
+import FavoriteButton from '@/components/listings/FavoriteButton'
 import { createClient } from '@/lib/supabase/server'
+import { incrementViews } from '@/lib/actions'
 
 const CONDITION_LABELS: Record<string, string> = {
   mint: 'Mint — Unworn or pristine',
@@ -29,6 +31,21 @@ export default async function ListingDetailPage({
     .single()
 
   if (!listing) notFound()
+
+  // Increment view counter (fire-and-forget)
+  incrementViews(id)
+
+  // Check if current user has favorited this listing
+  let isFavorited = false
+  if (user) {
+    const { data: fav } = await supabase
+      .from('favorites')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('listing_id', id)
+      .single()
+    isFavorited = !!fav
+  }
 
   const formattedPrice = new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -66,37 +83,19 @@ export default async function ListingDetailPage({
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-16">
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-16 xl:gap-24">
             {/* Left: Images */}
-            <div className="space-y-3">
-              {/* Primary image */}
-              <div className="relative aspect-square bg-muted overflow-hidden">
-                {listing.images?.[0] ? (
-                  <Image
-                    src={listing.images[0]}
-                    alt={`${listing.brand} ${listing.model}`}
-                    fill
-                    className="object-cover"
-                    priority
-                    sizes="(max-width: 1024px) 100vw, 60vw"
-                  />
-                ) : (
-                  <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/20">
-                    <svg className="w-24 h-24" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-3a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-2a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
-                    </svg>
-                  </div>
-                )}
+            <div className="relative">
+              {/* Floating favorite button for desktop */}
+              <div className="absolute top-4 right-4 z-10 hidden lg:block">
+                <FavoriteButton
+                  listingId={listing.id}
+                  initialFavorited={isFavorited}
+                  isLoggedIn={!!user}
+                />
               </div>
-
-              {/* Thumbnails */}
-              {listing.images?.length > 1 && (
-                <div className="grid grid-cols-4 gap-3">
-                  {listing.images.slice(1, 5).map((img: string, i: number) => (
-                    <div key={i} className="relative aspect-square bg-muted overflow-hidden">
-                      <Image src={img} alt={`View ${i + 2}`} fill className="object-cover" sizes="25vw" />
-                    </div>
-                  ))}
-                </div>
-              )}
+              <ImageGallery
+                images={listing.images ?? []}
+                alt={`${listing.brand} ${listing.model}`}
+              />
             </div>
 
             {/* Right: Info panel */}
@@ -109,7 +108,17 @@ export default async function ListingDetailPage({
                 <h1 className="font-display text-4xl md:text-5xl font-medium leading-tight mb-4">
                   {listing.model}
                 </h1>
-                <p className="font-display text-4xl font-light">{formattedPrice}</p>
+                <div className="flex items-end justify-between gap-4">
+                  <p className="font-display text-4xl font-light">{formattedPrice}</p>
+                  {/* Mobile favorite */}
+                  <div className="lg:hidden relative w-10 h-10">
+                    <FavoriteButton
+                      listingId={listing.id}
+                      initialFavorited={isFavorited}
+                      isLoggedIn={!!user}
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* Specs table */}
@@ -139,13 +148,43 @@ export default async function ListingDetailPage({
                 </div>
               )}
 
+              {/* Authenticity */}
+              <div className="border-t border-border pt-8">
+                <p className="text-[10px] font-medium tracking-[0.25em] uppercase text-muted-foreground mb-4">
+                  Authenticity
+                </p>
+                <div className="space-y-2.5">
+                  {listing.seller?.verified && (
+                    <div className="flex items-center gap-2.5 text-sm">
+                      <span className="w-1.5 h-1.5 bg-foreground block shrink-0" />
+                      Verified Seller
+                    </div>
+                  )}
+                  {listing.reference_number && (
+                    <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
+                      <span className="w-1.5 h-1.5 bg-muted-foreground/40 block shrink-0" />
+                      Reference number documented
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
+                    <span className="w-1.5 h-1.5 bg-muted-foreground/40 block shrink-0" />
+                    <span>
+                      VELIOR Authentication available{' '}
+                      <Link href="/pricing" className="text-foreground underline underline-offset-2 hover:no-underline">
+                        (Elite)
+                      </Link>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
               {/* Seller info */}
               <div className="border-t border-border pt-8">
                 <p className="text-[10px] font-medium tracking-[0.25em] uppercase text-muted-foreground mb-4">
                   Seller
                 </p>
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-muted rounded-full flex items-center justify-center text-xs font-medium uppercase">
+                  <div className="w-9 h-9 bg-muted flex items-center justify-center text-xs font-medium uppercase">
                     {(listing.seller?.full_name ?? listing.seller?.username ?? '?')[0]}
                   </div>
                   <div>
@@ -164,12 +203,9 @@ export default async function ListingDetailPage({
                 </div>
               </div>
 
-              {/* Contact form */}
+              {/* Tabs: Inquire / Offer */}
               <div className="border-t border-border pt-8">
-                <p className="text-[10px] font-medium tracking-[0.25em] uppercase text-muted-foreground mb-6">
-                  Inquire About This Watch
-                </p>
-                <ContactForm listingId={listing.id} recipientId={listing.seller_id} />
+                <InquiryTabsClient listingId={listing.id} recipientId={listing.seller_id} />
               </div>
 
               {/* Shipping trust */}
@@ -194,3 +230,4 @@ export default async function ListingDetailPage({
     </>
   )
 }
+

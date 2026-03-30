@@ -4,9 +4,9 @@ export default function Footer() {
   return (
     <footer className="bg-foreground text-background mt-auto">
       <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
           {/* Brand */}
-          <div>
+          <div className="md:col-span-2">
             <span className="font-display text-3xl font-bold tracking-[0.15em] text-background">
               VELIOR
             </span>
@@ -15,7 +15,7 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Links */}
+          {/* Marketplace links */}
           <div>
             <p className="text-xs font-medium tracking-[0.2em] uppercase text-background/40 mb-4">
               Marketplace
@@ -23,6 +23,9 @@ export default function Footer() {
             <div className="flex flex-col gap-3">
               <Link href="/listings" className="text-sm text-background/70 hover:text-background transition-colors">Browse Watches</Link>
               <Link href="/sell" className="text-sm text-background/70 hover:text-background transition-colors">Sell a Watch</Link>
+              <Link href="/pricing" className="text-sm text-background/70 hover:text-background transition-colors">Plans & Pricing</Link>
+              <Link href="/watchlist" className="text-sm text-background/70 hover:text-background transition-colors">My Watchlist</Link>
+              <Link href="/messages" className="text-sm text-background/70 hover:text-background transition-colors">Messages</Link>
               <Link href="/register" className="text-sm text-background/70 hover:text-background transition-colors">Create Account</Link>
             </div>
           </div>
