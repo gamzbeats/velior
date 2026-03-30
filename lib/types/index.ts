@@ -80,6 +80,91 @@ export interface Favorite {
   listing?: Listing
 }
 
+// Payment system
+export type TransactionStatus =
+  | 'pending'
+  | 'paid'
+  | 'awaiting_shipment'
+  | 'shipped'
+  | 'delivered'
+  | 'releasing'
+  | 'completed'
+  | 'disputed'
+  | 'refunded'
+  | 'cancelled'
+
+export type DisputeReason =
+  | 'item_not_received'
+  | 'item_not_as_described'
+  | 'counterfeit'
+  | 'damaged'
+  | 'other'
+
+export type DisputeStatus =
+  | 'open'
+  | 'under_review'
+  | 'resolved_buyer'
+  | 'resolved_seller'
+  | 'resolved_partial'
+
+export type Carrier = 'dhl' | 'fedex' | 'ups' | 'colissimo' | 'other'
+
+export interface Transaction {
+  id: string
+  listing_id: string
+  buyer_id: string
+  seller_id: string
+  // amounts in EUR cents
+  amount_gross: number
+  commission: number
+  amount_net: number
+  stripe_payment_intent_id: string | null
+  stripe_transfer_id: string | null
+  stripe_refund_id: string | null
+  status: TransactionStatus
+  tracking_number: string | null
+  carrier: Carrier | null
+  shipped_at: string | null
+  delivered_at: string | null
+  release_after: string | null
+  released_at: string | null
+  created_at: string
+  updated_at: string
+  listing?: Listing
+  buyer?: Profile
+  seller?: Profile
+}
+
+export interface StripeAccount {
+  id: string
+  user_id: string
+  stripe_connect_id: string
+  kyc_status: 'pending' | 'verified' | 'rejected'
+  payouts_enabled: boolean
+  charges_enabled: boolean
+  onboarding_url: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface DisputeCase {
+  id: string
+  transaction_id: string
+  opened_by: string
+  reason: DisputeReason
+  description: string | null
+  evidence_urls: string[]
+  status: DisputeStatus
+  resolution_note: string | null
+  resolved_by: string | null
+  resolved_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+// Commission rate (8%)
+export const COMMISSION_RATE = 0.08
+
 export type NotificationType = 'message' | 'offer' | 'favorite'
 
 export interface Notification {

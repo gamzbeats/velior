@@ -6,9 +6,11 @@ import { sendOffer } from '@/lib/actions'
 interface OfferFormProps {
   listingId: string
   recipientId: string
+  defaultName?: string
+  defaultEmail?: string
 }
 
-export default function OfferForm({ listingId, recipientId }: OfferFormProps) {
+export default function OfferForm({ listingId, recipientId, defaultName, defaultEmail }: OfferFormProps) {
   const [success, setSuccess] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
@@ -60,6 +62,7 @@ export default function OfferForm({ listingId, recipientId }: OfferFormProps) {
         <input
           type="text"
           name="sender_name"
+          defaultValue={defaultName ?? ''}
           placeholder="Full name"
           className="w-full border border-border bg-transparent px-4 py-3 text-sm focus:outline-none focus:border-foreground transition-colors"
         />
@@ -73,6 +76,7 @@ export default function OfferForm({ listingId, recipientId }: OfferFormProps) {
           type="email"
           name="sender_email"
           required
+          defaultValue={defaultEmail ?? ''}
           placeholder="you@example.com"
           className="w-full border border-border bg-transparent px-4 py-3 text-sm focus:outline-none focus:border-foreground transition-colors"
         />

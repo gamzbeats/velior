@@ -5,6 +5,7 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import { createClient } from '@/lib/supabase/server'
 import { markMessagesRead, sendMessage } from '@/lib/actions'
+import EditOfferInline from '@/components/messages/EditOfferInline'
 
 interface MessageRow {
   id: string
@@ -194,6 +195,9 @@ export default async function MessagesPage({
                           }`}>
                             {msg.content}
                           </div>
+                          {isOffer && isOwn && (
+                            <EditOfferInline messageId={msg.id} currentContent={msg.content} />
+                          )}
                         </div>
                       )
                     })}

@@ -7,9 +7,11 @@ import OfferForm from './OfferForm'
 interface InquiryTabsProps {
   listingId: string
   recipientId: string
+  defaultName?: string
+  defaultEmail?: string
 }
 
-export default function InquiryTabs({ listingId, recipientId }: InquiryTabsProps) {
+export default function InquiryTabs({ listingId, recipientId, defaultName, defaultEmail }: InquiryTabsProps) {
   const [tab, setTab] = useState<'inquire' | 'offer'>('inquire')
 
   return (
@@ -37,9 +39,9 @@ export default function InquiryTabs({ listingId, recipientId }: InquiryTabsProps
       </div>
 
       {tab === 'inquire' ? (
-        <ContactForm listingId={listingId} recipientId={recipientId} />
+        <ContactForm listingId={listingId} recipientId={recipientId} defaultName={defaultName} defaultEmail={defaultEmail} />
       ) : (
-        <OfferForm listingId={listingId} recipientId={recipientId} />
+        <OfferForm listingId={listingId} recipientId={recipientId} defaultName={defaultName} defaultEmail={defaultEmail} />
       )}
     </div>
   )

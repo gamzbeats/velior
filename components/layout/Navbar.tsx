@@ -8,9 +8,10 @@ import NotificationBell from './NotificationBell'
 
 interface NavbarProps {
   user?: { id: string; email?: string } | null
+  isAdmin?: boolean
 }
 
-export default function Navbar({ user }: NavbarProps) {
+export default function Navbar({ user, isAdmin }: NavbarProps) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -39,7 +40,12 @@ export default function Navbar({ user }: NavbarProps) {
               </Link>
               <NotificationBell userId={user.id} />
               <Link href="/messages" className="text-xs font-medium tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors">Messages</Link>
+              <Link href="/transactions" className="text-xs font-medium tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors">Orders</Link>
               <Link href="/profile" className="text-xs font-medium tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors">Profile</Link>
+              <Link href="/settings" className="text-xs font-medium tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors">Settings</Link>
+              {isAdmin && (
+                <Link href="/admin" className="text-xs font-medium tracking-[0.2em] uppercase text-orange-500 hover:text-orange-600 transition-colors">Admin</Link>
+              )}
               <form action={signOut}>
                 <button type="submit" className="text-xs font-medium tracking-[0.2em] uppercase border border-foreground px-4 py-2 hover:bg-foreground hover:text-background transition-colors">Sign Out</button>
               </form>
@@ -75,7 +81,12 @@ export default function Navbar({ user }: NavbarProps) {
             <>
               <Link href="/watchlist" onClick={() => setOpen(false)} className="text-sm font-medium tracking-[0.2em] uppercase">Watchlist</Link>
               <Link href="/messages" onClick={() => setOpen(false)} className="text-sm font-medium tracking-[0.2em] uppercase">Messages</Link>
+              <Link href="/transactions" onClick={() => setOpen(false)} className="text-sm font-medium tracking-[0.2em] uppercase">Orders</Link>
               <Link href="/profile" onClick={() => setOpen(false)} className="text-sm font-medium tracking-[0.2em] uppercase">Profile</Link>
+              <Link href="/settings" onClick={() => setOpen(false)} className="text-sm font-medium tracking-[0.2em] uppercase">Settings</Link>
+              {isAdmin && (
+                <Link href="/admin" onClick={() => setOpen(false)} className="text-sm font-medium tracking-[0.2em] uppercase text-orange-500">Admin</Link>
+              )}
               <form action={signOut}><button type="submit" className="text-sm font-medium tracking-[0.2em] uppercase text-left w-full">Sign Out</button></form>
             </>
           ) : (

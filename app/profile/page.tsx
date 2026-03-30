@@ -4,20 +4,44 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import PlanBadge from '@/components/profile/PlanBadge'
 import ListingManager from '@/components/profile/ListingManager'
+import SellerOnboarding from '@/components/profile/SellerOnboarding'
 import { createClient } from '@/lib/supabase/server'
+import { stripe } from '@/lib/stripe'
 import { type SubscriptionTier } from '@/lib/types'
 
-export default async function ProfilePage() {
+export default async function ProfilePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ connect?: string }>
+}) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) redirect('/login')
 
-  const [{ data: profile }, { data: listings }, { count: unreadCount }] = await Promise.all([
+  const [{ data: profile }, { data: listings }, { count: unreadCount }, { data: stripeAccount }] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', user.id).single(),
     supabase.from('listings').select('*').eq('seller_id', user.id).order('created_at', { ascending: false }),
     supabase.from('messages').select('id', { count: 'exact', head: true }).eq('recipient_id', user.id).eq('read', false),
+    supabase.from('stripe_accounts').select('payouts_enabled, stripe_connect_id').eq('user_id', user.id).maybeSingle(),
   ])
+
+  // On connect=success, sync status directly from Stripe (webhook may lag)
+  const { connect } = await searchParams
+  if (connect === 'success' && stripeAccount?.stripe_connect_id) {
+    const account = await stripe.accounts.retrieve(stripeAccount.stripe_connect_id)
+    await supabase
+      .from('stripe_accounts')
+      .update({
+        payouts_enabled: account.payouts_enabled ?? false,
+        charges_enabled: account.charges_enabled ?? false,
+        kyc_status: account.individual?.verification?.status === 'verified' ? 'verified' : 'pending',
+      })
+      .eq('user_id', user.id)
+    if (account.payouts_enabled) {
+      stripeAccount.payouts_enabled = true
+    }
+  }
 
   const tier = (profile?.subscription_tier ?? 'free') as SubscriptionTier
   const activeListings = listings?.filter((l) => l.status === 'active') ?? []
@@ -89,6 +113,11 @@ export default async function ProfilePage() {
         </div>
 
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-16">
+          {/* Seller payment setup */}
+          <div className="mb-8">
+            <SellerOnboarding payoutsEnabled={stripeAccount?.payouts_enabled ?? false} />
+          </div>
+
           {/* Upgrade banner for free users at limit */}
           {atFreeLimit && (
             <div className="mb-8 border border-border bg-card px-6 py-4 flex items-center justify-between gap-4">

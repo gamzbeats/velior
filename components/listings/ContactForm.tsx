@@ -6,9 +6,11 @@ import { sendMessage } from '@/lib/actions'
 interface ContactFormProps {
   listingId: string
   recipientId: string
+  defaultName?: string
+  defaultEmail?: string
 }
 
-export default function ContactForm({ listingId, recipientId }: ContactFormProps) {
+export default function ContactForm({ listingId, recipientId, defaultName, defaultEmail }: ContactFormProps) {
   const [result, setResult] = useState<{ error?: string; success?: string } | null>(null)
   const [pending, setPending] = useState(false)
 
@@ -41,6 +43,7 @@ export default function ContactForm({ listingId, recipientId }: ContactFormProps
           type="text"
           name="sender_name"
           required
+          defaultValue={defaultName ?? ''}
           className="w-full border border-border bg-transparent px-4 py-3 text-sm focus:outline-none focus:border-foreground transition-colors"
           placeholder="Full name"
         />
@@ -54,6 +57,7 @@ export default function ContactForm({ listingId, recipientId }: ContactFormProps
           type="email"
           name="sender_email"
           required
+          defaultValue={defaultEmail ?? ''}
           className="w-full border border-border bg-transparent px-4 py-3 text-sm focus:outline-none focus:border-foreground transition-colors"
           placeholder="email@example.com"
         />

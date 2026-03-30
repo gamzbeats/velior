@@ -5,6 +5,7 @@ import Footer from '@/components/layout/Footer'
 import ImageGallery from '@/components/listings/ImageGallery'
 import InquiryTabsClient from '@/components/listings/InquiryTabs'
 import FavoriteButton from '@/components/listings/FavoriteButton'
+import BuyNowButton from '@/components/listings/BuyNowButton'
 import { createClient } from '@/lib/supabase/server'
 import { incrementViews } from '@/lib/actions'
 
@@ -35,16 +36,16 @@ export default async function ListingDetailPage({
   // Increment view counter (fire-and-forget)
   incrementViews(id)
 
-  // Check if current user has favorited this listing
+  // Check if current user has favorited this listing + fetch their profile
   let isFavorited = false
+  let userProfile: { full_name: string | null } | null = null
   if (user) {
-    const { data: fav } = await supabase
-      .from('favorites')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('listing_id', id)
-      .single()
+    const [{ data: fav }, { data: profile }] = await Promise.all([
+      supabase.from('favorites').select('id').eq('user_id', user.id).eq('listing_id', id).single(),
+      supabase.from('profiles').select('full_name').eq('id', user.id).single(),
+    ])
     isFavorited = !!fav
+    userProfile = profile
   }
 
   const formattedPrice = new Intl.NumberFormat('en-US', {
@@ -183,12 +184,12 @@ export default async function ListingDetailPage({
                 <p className="text-[10px] font-medium tracking-[0.25em] uppercase text-muted-foreground mb-4">
                   Seller
                 </p>
-                <div className="flex items-center gap-3">
+                <Link href={`/sellers/${listing.seller_id}`} className="flex items-center gap-3 group">
                   <div className="w-9 h-9 bg-muted flex items-center justify-center text-xs font-medium uppercase">
                     {(listing.seller?.full_name ?? listing.seller?.username ?? '?')[0]}
                   </div>
                   <div>
-                    <p className="text-sm font-medium">
+                    <p className="text-sm font-medium group-hover:underline underline-offset-2">
                       {listing.seller?.full_name ?? listing.seller?.username ?? 'Private Seller'}
                     </p>
                     {listing.seller?.location && (
@@ -200,12 +201,27 @@ export default async function ListingDetailPage({
                       Verified
                     </span>
                   )}
-                </div>
+                </Link>
+              </div>
+
+              {/* Buy Now */}
+              <div className="border-t border-border pt-8">
+                <BuyNowButton
+                  listingId={listing.id}
+                  isLoggedIn={!!user}
+                  isSeller={user?.id === listing.seller_id}
+                  isSold={listing.status === 'sold'}
+                />
               </div>
 
               {/* Tabs: Inquire / Offer */}
               <div className="border-t border-border pt-8">
-                <InquiryTabsClient listingId={listing.id} recipientId={listing.seller_id} />
+                <InquiryTabsClient
+                  listingId={listing.id}
+                  recipientId={listing.seller_id}
+                  defaultName={userProfile?.full_name ?? undefined}
+                  defaultEmail={user?.email ?? undefined}
+                />
               </div>
 
               {/* Shipping trust */}
